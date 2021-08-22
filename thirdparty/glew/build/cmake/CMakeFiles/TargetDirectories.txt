@@ -1,0 +1,11 @@
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/install/strip.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/install/local.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/install.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/list_install_components.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/rebuild_cache.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/edit_cache.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/uninstall.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/visualinfo.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/glewinfo.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/glew_s.dir
+/home/macs/Desktop/Projects/C/macsEngine/glew/build/cmake/CMakeFiles/glew.dir
