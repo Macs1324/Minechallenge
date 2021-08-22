@@ -13,10 +13,9 @@ typedef struct
 {
     unsigned int vertexBuffer;
     unsigned int vertexArray;
-    unsigned int* elementArray;
-    unsigned int nrIndices;
+    unsigned int texture
 }cMesh;
 
-cMesh newMesh();
+cMesh meshNew();
 
 #endif

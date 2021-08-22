@@ -1,17 +1,24 @@
 CC = gcc
-DEST = build/minecraft
 
-INCLUDES = -Ithirdparty/glfw/include -Ithirdparty/glew/include -Ithirdparty/cglm/include -Isrc/modules/include
+INCLUDEFLAGS = -Ithirdparty/glew/include -Ithirdparty/glfw/include -Ithirdparty/cglm/include -Isrc/modules
 LIBS = thirdparty/glew/lib/libGLEW.a thirdparty/glfw/src/libglfw3.a thirdparty/cglm/libcglm.a
-FLAGS = -ldl -lX11 -lpthread -lm -lGL -lglfw3
+LINKFLAGS = -ldl -lGL -lX11 -lpthread -lm
+EXECUTABLE = build/minecraft
+SRC  = $(wildcard src/**/*.c) $(wildcard src/**/**/*.c) $(wildcard src/**/**/**/*.c)
+OBJ  = $(SRC:.c=.o)
+
+.PHONY: all run cleanobj
 
 all: game
 
-game: $(wildcard src/modules/*)
-	$(CC) src/main.c $(FLAGS) $(INCLUDES) $(LIBS) -o $(DEST) 
+game: $(OBJ)
+	$(CC) src/main.c $(LINKFLAGS) $(INCLUDEFLAGS) $(LIBS) $^ -o $(EXECUTABLE)
+	$(MAKE) cleanobj
+
+run: game
+	./$(EXECUTABLE)
 
 %.o: %.c
-	$(CC) -o$@ -c $<
-
-run: all
-	./$(DEST)
+	$(CC) $(INCLUDEFLAGS) -o $@ -c $<
+cleanobj:
+	rm -rf $(OBJ)

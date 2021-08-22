@@ -19,7 +19,7 @@ int main()
 
     glfwMakeContextCurrent(window);
     glewInit();
-    Ecs world;
+    Ecs world = ecsNew();
     EntityHandle block = ecsAddEntity(&world);
 
     float vertices[] = {
@@ -28,13 +28,7 @@ int main()
         -0.5, 0.5,
         -0.5, 0.5
     };
-
-    // glGenBuffers(1, &(world.mesh[ecsGetEntity(&world, block)->components[C_MESH]].vertexBuffer));
-    // glGenVertexArrays(1, &world.mesh[ecsGetEntity(&world, block)->components[C_MESH]].vertexArray);
-    // glBindVertexArray(world.mesh[ecsGetEntity(&world, block)->components[C_MESH]].vertexArray);
-    // glBindBuffer(GL_ARRAY_BUFFER, world.mesh[ecsGetEntity(&world, block)->components[C_MESH]].vertexBuffer);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-    
+    world.mesh[0] = meshNew();
     while(!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);

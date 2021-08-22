@@ -16,7 +16,6 @@ void renderSystemUpdate(RenderSystem* system, Ecs* ecs)
             cMesh* mesh = &ecs->mesh[ecs->entities[i].components[C_MESH]];
             glBindVertexArray(mesh->vertexArray);
             glUseProgram(system->shaderProgram);
-            glDrawElements(GL_TRIANGLES, mesh->nrIndices, GL_UNSIGNED_INT, mesh->elementArray);
         }
     }
 }

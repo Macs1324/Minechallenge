@@ -20,7 +20,8 @@ typedef struct
     unsigned int nrMesh;
 }Ecs;
 
-Entity newEntity();
+Entity entityNew();
+Ecs ecsNew();
 EntityHandle ecsAddEntity(Ecs* ecs);
 Entity* ecsGetEntity(Ecs* ecs, EntityHandle handle);
 void ecsRemoveEntity(Ecs* ecs, EntityHandle handle);

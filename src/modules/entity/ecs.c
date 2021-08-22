@@ -3,7 +3,7 @@
 
 #include "ecs.h"
 
-Entity newEntity()
+Entity entityNew()
 {
     Entity r;
     r.generation = 0;
@@ -15,9 +15,17 @@ Entity newEntity()
     return r;
 }
 
+Ecs ecsNew()
+{
+    Ecs r;
+    r.nrEntity = 0;
+    r.nrMesh = 0;
+    r.nrTransform = 0;
+}
+
 EntityHandle ecsAddEntity(Ecs* ecs)
 {
-    ecs->entities[ecs->nrEntity] = newEntity();
+    ecs->entities[ecs->nrEntity] = entityNew();
     EntityHandle r = {ecs->nrEntity, 0};
     ecs->nrEntity += 1;
     return r;
