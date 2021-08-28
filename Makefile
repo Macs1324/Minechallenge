@@ -1,7 +1,7 @@
 CC = gcc
 
-INCLUDEFLAGS = -Ithirdparty/glew/include -Ithirdparty/glfw/include -Ithirdparty/cglm/include -Isrc/modules
-LIBS = thirdparty/glew/lib/libGLEW.a thirdparty/glfw/src/libglfw3.a thirdparty/cglm/libcglm.a
+INCLUDEFLAGS = -Ithirdparty/glew/include -Ithirdparty/glfw/include -Ithirdparty/cglm/include -Ithirdparty/stb -Isrc/modules -Ithirdparty/fastNoise
+LIBS = thirdparty/glew/lib/libGLEW.a thirdparty/glfw/src/libglfw3.a thirdparty/cglm/libcglm.a thirdparty/fastNoise/libfastnoise.a
 LINKFLAGS = -ldl -lGL -lX11 -lpthread -lm
 EXECUTABLE = build/minecraft
 SRC  = $(wildcard src/**/*.c) $(wildcard src/**/**/*.c) $(wildcard src/**/**/**/*.c)
