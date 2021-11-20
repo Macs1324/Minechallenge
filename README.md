@@ -4,9 +4,9 @@
 *I am proud of some of the code, while I absolutely despise some other code in this project.*
 *But it still was very fun*
 
-:::image type="content" source="screenshots/screen1.png" alt-text="Screenshot one":::
-:::image type="content" source="screenshots/screen2.png" alt-text="Screenshot two":::
-:::image type="content" source="screenshots/screen3.png" alt-text="Screenshot 3":::
+![alt text](https://github.com/Macs1324/Minechallenge/blob/master/screenshots/screen1.png?raw=true)
+![alt text](https://github.com/Macs1324/Minechallenge/blob/master/screenshots/screen2.png?raw=true)
+![alt text](https://github.com/Macs1324/Minechallenge/blob/master/screenshots/screen3.png?raw=true)
 
 ## Building this
 *I still didn't know about CMake when I started this project, so I used a classic Makefile. It is definitely not as portable, and I only tested it on Linux (arch based)*
