@@ -7,8 +7,8 @@
 #include <shader/shader.h>
 #include <ecs/systems/worldgen.h>
 
-int SCREEN_WIDTH = 800;
-int SCREEN_HEIGHT = 800;
+int SCREEN_WIDTH = 1280;
+int SCREEN_HEIGHT = 720;
 
 int prev_xpos = 400;
 int prev_ypos = 400;
@@ -47,7 +47,7 @@ void processInput(GLFWwindow *window, Ecs* ecs)
 {
     vec3 velocity;
     glm_vec3_zero(velocity);
-    const float cameraSpeed = 10.0f * ecs->data.timeDelta; // adjust accordingly
+    const float cameraSpeed = 20.0f * ecs->data.timeDelta; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
         velocity[2] += sin(glm_rad(((cTransform*)(ecsGetComponent(&world, ecsGetMainCameraEntity(&world), ECS_TRANSFORM)))->rotation[1]));
@@ -108,7 +108,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Mein Kraft", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Lesbicraft", NULL, NULL);
 
     glfwMakeContextCurrent(window);
     glewInit();
@@ -118,41 +118,25 @@ int main()
     world.data.screenHeight = SCREEN_HEIGHT;
 
 
-    Entity block = ecsAddEntity(&world);
-    cTransform* transform = ecsGetComponent(&world, block, ECS_TRANSFORM);
-    float vertices[] = {
-        0.5, 0.5, 0.5, 1.0, 1.0,
-        0.5, -0.5, 0.5, 1.0, 0.0,
-        -0.5, -0.5, 0.5, 0.0, 0.0,
-        -0.5, 0.5, 0.5, 0.0, 1.0,
+    Entity chunks[12*12];
 
-        0.5, 0.5, -0.5, 1.0, 1.0,
-        0.5, -0.5, -0.5, 1.0, 0.0,
-        -0.5, -0.5, -0.5, 0.0, 0.0,
-        -0.5, 0.5, -0.5, 0.0, 1.0,
-    };
-
-    unsigned int indices[] = {
-        0, 1, 2,
-        0, 2, 3,
-
-        4, 5, 6,
-        4, 6, 7
-    };
-    ecsAddComponent(&world, block, ECS_MESH);
-    cMeshLoadVertices(ecsGetComponent(&world, block, ECS_MESH), vertices, 40, indices, 12);
-    cMesh chunk = genChunk(&world, (vec2){0.0, 0.0});
-    cMeshLoadTexture(ecsGetComponent(&world, block, ECS_MESH), "/home/macs/Desktop/Projects/C/minecraft/res/blocks/grass.png");
-
-    ((cMesh*)ecsGetComponent(&world, block, ECS_MESH))->vertexBuffer = chunk.vertexBuffer;
-    ((cMesh*)ecsGetComponent(&world, block, ECS_MESH))->vertexArray = chunk.vertexArray;
-    ((cMesh*)ecsGetComponent(&world, block, ECS_MESH))->nrIndices = chunk.nrIndices;
-    ((cMesh*)ecsGetComponent(&world, block, ECS_MESH))->elementArray = chunk.elementArray;
-
+    for(int i = 0; i < 12*12; i++)
+    {
+        chunks[i] = ecsAddEntity(&world);
+        ecsAddComponent(&world, chunks[i], ECS_MESH);
+        cMesh chunk;
+        chunk = genChunk(&world, (vec2){i / 12, i % 12}, 16);
+        cMeshLoadTexture(ecsGetComponent(&world, chunks[i], ECS_MESH), "./res/blocks/atlas.png");
+        ((cMesh*)ecsGetComponent(&world, chunks[i], ECS_MESH))->vertexBuffer = chunk.vertexBuffer;
+        ((cMesh*)ecsGetComponent(&world, chunks[i], ECS_MESH))->vertexArray = chunk.vertexArray;
+        ((cMesh*)ecsGetComponent(&world, chunks[i], ECS_MESH))->nrIndices = chunk.nrIndices;
+        ((cMesh*)ecsGetComponent(&world, chunks[i], ECS_MESH))->elementArray = chunk.elementArray;
+    }
 
     Entity player = ecsAddEntity(&world);
     ((cTransform*)ecsGetComponent(&world, player, ECS_TRANSFORM))->rotation[1] = 90;
     ((cTransform*)ecsGetComponent(&world, player, ECS_TRANSFORM))->position[2] -= 20;
+    ((cTransform*)ecsGetComponent(&world, player, ECS_TRANSFORM))->position[1] = 90;
     ecsAddComponent(&world, player, ECS_CAMERA);
     ecsSetMainCameraEntity(&world, player);
 
@@ -161,6 +145,7 @@ int main()
     // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     glfwSetCursorPosCallback(window, cursorCallback);
     float angle = 0;
+    printf("%d\n", world.nrMesh);
     while(!glfwWindowShouldClose(window))
     {
         ecsFrameStart(&world);
@@ -170,7 +155,6 @@ int main()
         processInput(window, &world);
 
         renderUpdate(&world);
-        // cMeshDraw(((cMesh*)ecsGetComponent(&world, block, ECS_MESH)), world.data.meshShaderProgram.program);
         glfwPollEvents();
         glfwSwapBuffers(window);
         ecsFrameEnd(&world);

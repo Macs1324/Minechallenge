@@ -16,6 +16,8 @@ typedef struct
 
 void cMeshLoadVertices(cMesh* r, float vertices[], int nrVertices, unsigned int indices[], int nrIndices);
 void cMeshLoadTexture(cMesh* r, const char* filename);
+void cMeshLoadNormal(cMesh* r, const char* filename);
+
 
 //FOR DEBUG! REMOVE THIS ASAP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void cMeshDraw(cMesh* mesh, unsigned int shaderProgram);

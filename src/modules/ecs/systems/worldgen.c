@@ -5,15 +5,15 @@
 #include <ecs/ecs.h>
 #include <GL/glew.h>
 #include "worldgen.h"
-// #include <fastnoise.h>
+#include <perlin/perlin.h>
 
-const int CHUNK_WIDTH = 8;
-const int CHUNK_DEPTH = 8;
-const int CHUNK_HEIGHT = 32;
+const int CHUNK_WIDTH = 16;
+const int CHUNK_DEPTH = 16;
+const int CHUNK_HEIGHT = 256;
 
-void appendVertex(float v[5], float* vertices, int* nrVertices, int* capVertices, unsigned int* indices, int* nrIndices, int* capIndices)
+void appendVertex(float v[8], float* vertices, int* nrVertices, int* capVertices, unsigned int* indices, int* nrIndices, int* capIndices)
 {
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 8; i++)
     {
         while(*nrVertices + i > *capVertices)
         {
@@ -31,51 +31,52 @@ void appendVertex(float v[5], float* vertices, int* nrVertices, int* capVertices
         }
         vertices[(*nrVertices + i)] = v[i];
     }
-    *nrVertices += 5;
+    *nrVertices += 8;
 }
 
 void genFace(float w, float h, float d, float* vertices, int* nrVertices, int* capVertices, 
-    unsigned int* indices, int* nrIndices, int* CapIndices, faces faceId)
+    unsigned int* indices, int* nrIndices, int* CapIndices, faces faceId, int blockId, int nrBlocks)
 {
+    float ID = (float)blockId;
     switch(faceId)
-    {
+    {                    //         |        position        |               UV                  |        NORMAL       |
         case BLOCK_FACE_TOP:
-            appendVertex((float[5]){w + 0.5, h + 0.5, d + 0.5, 1.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w + 0.5, h + 0.5, d - 0.5, 1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h + 0.5, d - 0.5, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h + 0.5, d + 0.5, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            break;
+            appendVertex((float[8]){w + 0.5, h + 0.5, d + 0.5, (ID + 1.0) / nrBlocks, 6.0 / 6.0,       0.0, 1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h + 0.5, d - 0.5, (ID + 1.0) / nrBlocks, 5.0 / 6.0,       0.0, 1.0, 0.0,}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h + 0.5, d - 0.5, ID / nrBlocks,         5.0 / 6.0,       0.0, 1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h + 0.5, d + 0.5, ID / nrBlocks,         6.0 / 6.0,       0.0, 1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            break;                 
         case BLOCK_FACE_LEFT:
-            appendVertex((float[5]){w - 0.5, h + 0.5, d - 0.5, 1.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h - 0.5, d - 0.5, 1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h - 0.5, d + 0.5, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h + 0.5, d + 0.5, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h + 0.5, d - 0.5, (ID + 1.0) / nrBlocks, 5.0 / 6.0,       -1.0, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h - 0.5, d - 0.5, (ID + 1.0) / nrBlocks, 4.0 / 6.0,       -1.0, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h - 0.5, d + 0.5, ID / nrBlocks,         4.0 / 6.0,       -1.0, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h + 0.5, d + 0.5, ID / nrBlocks,         5.0 / 6.0,       -1.0, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
             break;
         case BLOCK_FACE_FRONT:
-            appendVertex((float[5]){w + 0.5, h + 0.5, d - 0.5, 1.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w + 0.5, h - 0.5, d - 0.5, 1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h - 0.5, d - 0.5, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h + 0.5, d - 0.5, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h + 0.5, d - 0.5, (ID + 1.0) / nrBlocks, 4.0 / 6.0,       0.0, 0.0, -1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h - 0.5, d - 0.5, (ID + 1.0) / nrBlocks, 3.0 / 6.0,       0.0, 0.0, -1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h - 0.5, d - 0.5, ID / nrBlocks,         3.0 / 6.0,       0.0, 0.0, -1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h + 0.5, d - 0.5, ID / nrBlocks,         4.0 / 6.0,       0.0, 0.0, -1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
             break;
 
         case BLOCK_FACE_RIGHT:
-            appendVertex((float[5]){w + 0.5, h + 0.5, d + 0.5, 1.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w + 0.5, h - 0.5, d + 0.5, 1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w + 0.5, h - 0.5, d - 0.5, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w + 0.5, h + 0.5, d - 0.5, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            break;
+            appendVertex((float[8]){w + 0.5, h + 0.5, d + 0.5, (ID + 1.0) / nrBlocks, 3.0 / 6.0,       1.0, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h - 0.5, d + 0.5, (ID + 1.0) / nrBlocks, 2.0 / 6.0,       1.0, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h - 0.5, d - 0.5, ID / nrBlocks,         2.0 / 6.0,       1.0, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h + 0.5, d - 0.5, ID / nrBlocks,         3.0 / 6.0,       1.0, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            break; 
         case BLOCK_FACE_BOTTOM:
-            appendVertex((float[5]){w + 0.5, h - 0.5, d - 0.5, 1.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w + 0.5, h - 0.5, d + 0.5, 1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h - 0.5, d + 0.5, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h - 0.5, d - 0.5, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h - 0.5, d - 0.5, (ID + 1.0) / nrBlocks, 2.0 / 6.0,       0.0, -1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h - 0.5, d + 0.5, (ID + 1.0) / nrBlocks, 1.0 / 6.0,       0.0, -1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h - 0.5, d + 0.5, ID / nrBlocks,         1.0 / 6.0,       0.0, -1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h - 0.5, d - 0.5, ID / nrBlocks,         2.0 / 6.0,       0.0, -1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
             break;
 
         case BLOCK_FACE_BACK:
-            appendVertex((float[5]){w + 0.5, h - 0.5, d + 0.5, 1.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w + 0.5, h + 0.5, d + 0.5, 1.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h + 0.5, d + 0.5, 0.0, 0.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
-            appendVertex((float[5]){w - 0.5, h - 0.5, d + 0.5, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h - 0.5, d + 0.5, (ID + 1.0) / nrBlocks, 0.0 / 6.0,       0.0, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w + 0.5, h + 0.5, d + 0.5, (ID + 1.0) / nrBlocks, 1.0 / 6.0,       0.0, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h + 0.5, d + 0.5, ID / nrBlocks,         1.0 / 6.0,       0.0, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
+            appendVertex((float[8]){w - 0.5, h - 0.5, d + 0.5, ID / nrBlocks,         0.0 / 6.0,       0.0, 0.0, 1.0}, vertices, nrVertices, capVertices, indices, nrIndices, CapIndices);
             break;
     };
 
@@ -101,18 +102,18 @@ void genFace(float w, float h, float d, float* vertices, int* nrVertices, int* c
 
     for(int i = 0; i < 6; i++)
     {
-        indices[*nrIndices + i] = (*nrVertices / 5.0) - 4 + newIndices[i];
+        indices[*nrIndices + i] = (*nrVertices / 8.0) - 4 + newIndices[i];
     }
 
     *nrIndices += 6;
 }
 
-cMesh genChunkMesh(int chunkData[CHUNK_HEIGHT][CHUNK_WIDTH][CHUNK_DEPTH])
+cMesh genChunkMesh(int chunkData[CHUNK_HEIGHT][CHUNK_WIDTH][CHUNK_DEPTH], vec2 chunkPos, int nrBlocks)
 {
     cMesh r;
     float* vertices;
     unsigned long int nrVertices = 0;
-    unsigned long int capVertices = 5000000;
+    unsigned long int capVertices = 8 * 8 * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH;
 
     int* indices;
     unsigned long int nrIndices = 0;
@@ -127,93 +128,96 @@ cMesh genChunkMesh(int chunkData[CHUNK_HEIGHT][CHUNK_WIDTH][CHUNK_DEPTH])
         {
            for(int d = 0; d < CHUNK_DEPTH; d++)
             {
+                int x = w + (CHUNK_WIDTH * chunkPos[0]);
+                int y = h;
+                int z = d + (CHUNK_DEPTH * chunkPos[1]);
                 if(chunkData[h][w][d] >= 0)
                 {
                     if(h == 0)
                     {
-                        genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BOTTOM);
+                        genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BOTTOM, chunkData[h][w][d], nrBlocks);
                         if(chunkData[h + 1][w][d] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_TOP);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_TOP, chunkData[h][w][d], nrBlocks);
                         }
                     }
                     else if(h == CHUNK_HEIGHT - 1)
                     {
-                        genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_TOP);
+                        genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_TOP, chunkData[h][w][d], nrBlocks);
                         if(chunkData[h - 1][w][d] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BOTTOM);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BOTTOM, chunkData[h][w][d], nrBlocks);
                         }
                     }
                     else
                     {
                         if(chunkData[h + 1][w][d] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_TOP);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_TOP, chunkData[h][w][d], nrBlocks);
                         }
 
                         if(chunkData[h - 1][w][d] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BOTTOM);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BOTTOM, chunkData[h][w][d], nrBlocks);
                         }
                     }
 
                     if(w == 0)
                     {
-                        genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_LEFT);
+                        genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_LEFT, chunkData[h][w][d], nrBlocks);
                         if(chunkData[h][w + 1][d] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_RIGHT);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_RIGHT, chunkData[h][w][d], nrBlocks);
                         }
                     }
                     else if(w == CHUNK_WIDTH - 1)
                     {
-                        genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_RIGHT);
+                        genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_RIGHT, chunkData[h][w][d], nrBlocks);
                         if(chunkData[h][w - 1][d] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_LEFT);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_LEFT, chunkData[h][w][d], nrBlocks);
                         }
                     }
                     else
                     {
                         if(chunkData[h][w + 1][d] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_RIGHT);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_RIGHT, chunkData[h][w][d], nrBlocks);
                         }
 
                         if(chunkData[h][w - 1][d] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_LEFT);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_LEFT, chunkData[h][w][d], nrBlocks);
                         }
                     }
 
                     if(d == 0)
                     {
-                        genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_FRONT);
+                        genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_FRONT, chunkData[h][w][d], nrBlocks);
                         if(chunkData[h][w][d + 1] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BACK);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BACK, chunkData[h][w][d], nrBlocks);
                         }                    
                     
                     }
                     else if(d == CHUNK_DEPTH - 1)
                     {
-                        genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BACK);
+                        genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BACK, chunkData[h][w][d], nrBlocks);
                         if(chunkData[h][w][d - 1] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_FRONT);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_FRONT, chunkData[h][w][d], nrBlocks);
                         }
                     }
                     else
                     {
                         if(chunkData[h][w][d + 1] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BACK);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_BACK, chunkData[h][w][d], nrBlocks);
                         }
 
                         if(chunkData[h][w][d - 1] < 0)
                         {
-                            genFace(w, h, d, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_FRONT);
+                            genFace(x, y, z, vertices, &nrVertices, &capVertices, indices, &nrIndices, &capIndices, BLOCK_FACE_FRONT, chunkData[h][w][d], nrBlocks);
                         }
                     }
                 }
@@ -228,29 +232,15 @@ cMesh genChunkMesh(int chunkData[CHUNK_HEIGHT][CHUNK_WIDTH][CHUNK_DEPTH])
     return r;
 }
 
-cMesh genChunk(Ecs* ecs, vec2 chunkPos)
+cMesh genChunk(Ecs* ecs, vec2 chunkPos, int nrBlocks)
 {
     int chunkData[CHUNK_HEIGHT][CHUNK_WIDTH][CHUNK_DEPTH];
-    // fnl_state noise = fnlCreateState();
-    // noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
-    // float heightMap[128 * 128];
-    // int index = 0;
-
-    // for (int y = 0; y < 128; y++)
-    // {
-    //     for (int x = 0; x < 128; x++) 
-    //     {
-    //         heightMap[index++] = fnlGetNoise2D(&noise, x, y);
-    //     }
-    // }
-
     for(int h = 0; h < CHUNK_HEIGHT; h++)
     {
         for(int w = 0; w < CHUNK_WIDTH; w++)
         {
             for(int d = 0; d < CHUNK_DEPTH; d++)
             {
-                // chunkData[ (int)(heightMap[ (int)((int)(w * 128) + (int)(d % 128)) ] * 100) ][w][d] = 0;
                 chunkData[h][w][d] = -1;
             }
         }
@@ -262,24 +252,41 @@ cMesh genChunk(Ecs* ecs, vec2 chunkPos)
         {
             for(int d = 0; d < CHUNK_DEPTH; d++)
             {
-                if(h < 2)
+                if(h < 40)
                 {
-                    chunkData[h][w][d] = 0;
+                    float y = (float)h;
+                    
+                    float n = perlin2d(w + (chunkPos[0] * CHUNK_WIDTH), d + (chunkPos[1] * CHUNK_DEPTH), 0.01, 4) * 100;
+                    // printf("%f\n", n);
+                    y += n;
+                    chunkData[(int)y][w][d] = 0;
+                    if(h < 33)
+                    {
+                        n = perlin2d(w + (chunkPos[0] * CHUNK_WIDTH), d + (chunkPos[1] * CHUNK_DEPTH), 0.08, 4) * 10;
+                        // printf("%f\n", n);
+                        y -= n;
+                        chunkData[(int)y][w][d] = 2;
+                    }
                 }
             }
         }
     }
 
-    for(int i = 0; i < 200; i++)
+    for(int h = 0; h < CHUNK_HEIGHT - 1; h++)
     {
-        int x = rand() % CHUNK_WIDTH;
-        int y = rand() % CHUNK_HEIGHT;
-        int z = rand() % CHUNK_DEPTH;
-
-        chunkData[x][y][z] = 0;
+        for(int w = 0; w < CHUNK_WIDTH; w++)
+        {
+            for(int d = 0; d < CHUNK_DEPTH; d++)
+            {
+                if(chunkData[h][w][d] >= 0 && chunkData[h + 1][w][d] < 0)
+                {
+                    chunkData[h][w][d] = 1;
+                } 
+            }
+        }
     }
 
-    cMesh r = genChunkMesh(chunkData);
+    cMesh r = genChunkMesh(chunkData, chunkPos, nrBlocks);
 
     return r;
 }

@@ -5,6 +5,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "components.h"
+#include <perlin/perlin.h>
+
 
 cTransform cTransformNew()
 {
@@ -21,7 +23,7 @@ cCamera cCameraNew()
     cCamera r;
     r.fov = 3.14 / 3.0;
     r.clipNear = 0.01;
-    r.clipFar = 1024.0;
+    r.clipFar = 512.0;
 
     return r;
 }
@@ -40,25 +42,15 @@ void cMeshLoadVertices(cMesh* r, float vertices[], int nrVertices, unsigned int 
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, nrIndices * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
     r->nrIndices = nrIndices;
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 }
 
-//FUCKING DELETE THIS ASAP, THIS IS FOR DEBUGGING FOR CHRIST'S SAKE
-void cMeshDraw(cMesh* mesh, unsigned int shaderProgram)
-{
-    glBindVertexArray(mesh->vertexArray);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->elementArray);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, mesh->texture);
-
-    glUseProgram(shaderProgram);
-    glDrawElements(GL_TRIANGLES, mesh->nrIndices, GL_UNSIGNED_INT, 0);
-}
 
 void cMeshLoadTexture(cMesh* r, const char* filename)
 {

@@ -19,7 +19,7 @@ typedef enum
 // cMesh genChunkMesh(int chunkData[CHUNK_HEIGHT][CHUNK_WIDTH][CHUNK_DEPTH]);
 void noise(vec2 chunkPos, vec3 blockPos);
 void genFace(float w, float h, float d, float* vertices, int* nrVertices, int* capVertices, 
-    unsigned int* indices, int* nrIndices, int* CapIndices, faces faceId);
-cMesh genChunk(Ecs* ecs, vec2 chunkPos);
+        unsigned int* indices, int* nrIndices, int* CapIndices, faces faceId, int blockId, int nrBlocks);
+cMesh genChunk(Ecs* ecs, vec2 chunkPos, int nrBlocks);
 
 #endif

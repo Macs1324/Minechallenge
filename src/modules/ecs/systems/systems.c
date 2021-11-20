@@ -12,8 +12,8 @@ void renderInit(GLFWwindow* window, Ecs* ecs)
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glEnable(GL_DEPTH_TEST);
     ecs->data.meshShaderProgram = shaderCreateFromSource(
-        "/home/macs/Desktop/Projects/C/minecraft/res/shaders/mesh.vs",
-        "/home/macs/Desktop/Projects/C/minecraft/res/shaders/mesh.fs"
+        "./res/shaders/mesh.vs",
+        "./res/shaders/mesh.fs"
     );
 }
 void renderUpdate(Ecs* ecs)
@@ -62,10 +62,11 @@ void renderUpdate(Ecs* ecs)
         glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->elementArray);
         glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mesh->texture);
+        glUniform1i(glGetUniformLocation(ecs->data.meshShaderProgram.program, "sprite"), 0);
         glUniformMatrix4fv(glGetUniformLocation(ecs->data.meshShaderProgram.program, "model"), 1, GL_FALSE, model);
         glUniformMatrix4fv(glGetUniformLocation(ecs->data.meshShaderProgram.program, "view"), 1, GL_FALSE, view);
         glUniformMatrix4fv(glGetUniformLocation(ecs->data.meshShaderProgram.program, "proj"), 1, GL_FALSE, proj);
-        glBindTexture(GL_TEXTURE_2D, mesh->texture);
         glDrawElements(GL_TRIANGLES, mesh->nrIndices, GL_UNSIGNED_INT, 0);
     }
 }
